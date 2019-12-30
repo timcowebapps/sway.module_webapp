@@ -65,8 +65,7 @@ NAMESPACE_END(sway)
 #include <sway/webcore/view/itemview.h>
 #include <sway/webcore/view/itemcollectionview.h>
 #include <sway/webcore/view/advanced/stackview.h>
-#include <sway/webcore/control/layout.h>
-#include <sway/webcore/control/label.h>
+#include <sway/webui.h>
 
 using namespace sway;
 using namespace sway::webcore;
@@ -152,8 +151,8 @@ EMSCRIPTEN_BINDINGS(views) {
 	view::AItemView::registerEmscriptenClass("AItemView");
 	view::AItemCollectionView::registerEmscriptenClass("AItemCollectionView");
 	view::advanced::StackView::registerEmscriptenClass("StackView");
-	control::Layout::registerEmscriptenClass("Layout");
-	control::Label::registerEmscriptenClass("Label");
+	webui::control::Layout::registerEmscriptenClass("Layout");
+	webui::control::LabelCtrl::registerEmscriptenClass("Label");
 } // views
 
 EMSCRIPTEN_BINDINGS(controllers) {

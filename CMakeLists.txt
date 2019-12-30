@@ -12,8 +12,17 @@ set(META_LANGUAGES C CXX)
 
 project(${META_PROJECT_NAME} VERSION ${META_VERSION} LANGUAGES ${META_LANGUAGES})
 
-#add_subdirectory(modules/sway.module_core)
-add_subdirectory(modules/sway.module_webcore)
+if (NOT TARGET libmodule_core)
+	add_subdirectory(modules/sway.module_core)
+endif()
+
+if (NOT TARGET libmodule_webcore)
+	add_subdirectory(modules/sway.module_webcore)
+endif()
+
+if (NOT TARGET libmodule_webui)
+	add_subdirectory(modules/sway.module_webui)
+endif()
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_COMPILER "em++")
@@ -37,6 +46,7 @@ include_directories("/home/bonus85/emsdk/emscripten/incoming/system/include")
 include_directories(${MODULE_DIR}/include)
 include_directories(${MODULE_DIR}/modules/sway.module_core/include)
 include_directories(${MODULE_DIR}/modules/sway.module_webcore/include)
+include_directories(${MODULE_DIR}/modules/sway.module_webui/include)
 
 # Получаем пути ко всем хедерам и исходникам библиотеки
 file(GLOB_RECURSE MODULE_HEADERS ${MODULE_DIR}/include/*.*)
@@ -45,4 +55,4 @@ file(GLOB_RECURSE MODULE_SOURCES ${MODULE_DIR}/src/*.*)
 add_executable(${META_LIB_NAME} ${MODULE_SOURCES})
 set_target_properties(${META_LIB_NAME} PROPERTIES OUTPUT_NAME ${META_PROJECT_NAME} SUFFIX ".js")
 
-target_link_libraries(${META_LIB_NAME} libmodule_webcore)
+target_link_libraries(${META_LIB_NAME} libmodule_webcore libmodule_webui)
