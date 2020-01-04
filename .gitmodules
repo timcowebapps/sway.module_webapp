@@ -7,3 +7,6 @@
 [submodule "modules/sway.module_webui"]
 	path = modules/sway.module_webui
 	url = https://github.com/timcowebapps/sway.module_webui.git
+[submodule "modules/sway.module_webcore.mvc"]
+	path = modules/sway.module_webcore.mvc
+	url = https://github.com/timcowebapps/sway.module_webcore.mvc.git

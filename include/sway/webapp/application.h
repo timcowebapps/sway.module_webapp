@@ -6,7 +6,7 @@
 #include <sway/webcore/base/dom/htmlelement.h>
 #include <sway/webcore/base/treeupdater.h>
 #include <sway/webcore/base/treenodeelement.h>
-#include <sway/webcore/view/itemview.h>
+#include <sway/webcore/mvc/view/itemview.h>
 #include <sway/webcore/prereqs.h>
 
 NAMESPACE_BEGIN(sway)

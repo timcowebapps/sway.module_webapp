@@ -20,6 +20,10 @@ if (NOT TARGET libmodule_webcore)
 	add_subdirectory(modules/sway.module_webcore)
 endif()
 
+if (NOT TARGET libmodule_webcore.mvc)
+	add_subdirectory(modules/sway.module_webcore.mvc)
+endif()
+
 if (NOT TARGET libmodule_webui)
 	add_subdirectory(modules/sway.module_webui)
 endif()
@@ -46,6 +50,7 @@ include_directories("/home/bonus85/emsdk/emscripten/incoming/system/include")
 include_directories(${MODULE_DIR}/include)
 include_directories(${MODULE_DIR}/modules/sway.module_core/include)
 include_directories(${MODULE_DIR}/modules/sway.module_webcore/include)
+include_directories(${MODULE_DIR}/modules/sway.module_webcore.mvc/include)
 include_directories(${MODULE_DIR}/modules/sway.module_webui/include)
 
 # Получаем пути ко всем хедерам и исходникам библиотеки
@@ -55,4 +60,4 @@ file(GLOB_RECURSE MODULE_SOURCES ${MODULE_DIR}/src/*.*)
 add_executable(${META_LIB_NAME} ${MODULE_SOURCES})
 set_target_properties(${META_LIB_NAME} PROPERTIES OUTPUT_NAME ${META_PROJECT_NAME} SUFFIX ".js")
 
-target_link_libraries(${META_LIB_NAME} libmodule_webcore libmodule_webui)
+target_link_libraries(${META_LIB_NAME} libmodule_webcore libmodule_webcore.mvc libmodule_webui)
