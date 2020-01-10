@@ -2,11 +2,11 @@
 #define _SWAY_WEBAPP_APPLICATION_H
 
 #include <sway/core/containers/hierarchylistener.h>
-#include <sway/webcore/base/dom/htmldocument.h>
-#include <sway/webcore/base/dom/htmlelement.h>
-#include <sway/webcore/base/treeupdater.h>
-#include <sway/webcore/base/treenodeelement.h>
-#include <sway/webcore/mvc/view/itemview.h>
+#include <sway/webcore/dom/htmldocument.h>
+#include <sway/webcore/dom/htmlelement.h>
+#include <sway/webcore/treeupdater.h>
+#include <sway/webcore/treenodeelement.h>
+#include <sway/webcore/mvc/itemview.h>
 #include <sway/webcore/prereqs.h>
 
 NAMESPACE_BEGIN(sway)
@@ -40,14 +40,14 @@ public:
 
 	virtual void onNodeUpdated(const core::containers::HierarchyNodeIndex & nodeIndex);
 
-	webcore::base::TreeNodeElement * getRoot();
+	webcore::TreeNodeElement * getRoot();
 
 	void start();
 
 private:
 	core::containers::Hierarchy * _tree;
-	webcore::base::TreeNodeElement * _root;
-	webcore::base::TreeUpdater * _treeUpdater;
+	webcore::TreeNodeElement * _root;
+	webcore::TreeUpdater * _treeUpdater;
 };
 
 NAMESPACE_END(webapp)

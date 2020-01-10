@@ -4,16 +4,12 @@ NAMESPACE_BEGIN(sway)
 NAMESPACE_BEGIN(webapp)
 
 Application::Application(const std::string & elementId) {
-	_treeUpdater = new webcore::base::TreeUpdater();
+	_treeUpdater = new webcore::TreeUpdater();
 	_tree = new core::containers::Hierarchy();
 	_tree->attachListener(this);
 	_tree->setRootNode(
-		_root = new webcore::mvc::view::AItemView(nullptr, core::containers::HierarchyNodeIndex({ 0 }), elementId,
-			(webcore::base::TreeNodeElementCreateInfo) {
-				.tagname = "div",
-				.id = elementId
-			}
-		)
+		_root = new webcore::mvc::AItemView(nullptr, core::containers::HierarchyNodeIndex({ 0 }),
+			elementId, webcore::TreeNodeElementCreateInfo("div", elementId))
 	);
 }
 
@@ -24,7 +20,7 @@ Application::~Application() {
 }
 
 void Application::onNodeAdded(const core::containers::HierarchyNodeIndex & nodeIndex) {
-	webcore::base::TreeNodeElement * element = (webcore::base::TreeNodeElement *) _tree->find(nodeIndex.getParent());
+	webcore::TreeNodeElement * element = (webcore::TreeNodeElement *) _tree->find(nodeIndex.getParent());
 	EM_ASM({console.log("NODE_ID " + UTF8ToString($0))}, nodeIndex.toString().c_str());
 
 	if (element)
@@ -38,7 +34,7 @@ void Application::onNodeRemoved(core::containers::HierarchyNodePtr_t parent, cor
 }
 
 void Application::onNodeUpdated(const core::containers::HierarchyNodeIndex & nodeIndex) {
-	webcore::base::TreeNodeElement * element = (webcore::base::TreeNodeElement *) _tree->find(nodeIndex.getParent());
+	webcore::TreeNodeElement * element = (webcore::TreeNodeElement *) _tree->find(nodeIndex.getParent());
 	EM_ASM({console.log("NODE_UPDATE_ID " + UTF8ToString($0))}, nodeIndex.toString().c_str());
 
 	if (element)
@@ -47,25 +43,25 @@ void Application::onNodeUpdated(const core::containers::HierarchyNodeIndex & nod
 	_treeUpdater->forceUpdate();
 }
 
-webcore::base::TreeNodeElement * Application::getRoot() {
+webcore::TreeNodeElement * Application::getRoot() {
 	return _root;
 }
 
 NAMESPACE_END(webapp)
 NAMESPACE_END(sway)
 
-#include <sway/webcore/mvc/model/abstractitemmodel.h>
-#include <sway/webcore/mvc/model/abstractitemcollection.h>
+#include <sway/webcore/mvc/itemmodel.h>
+#include <sway/webcore/mvc/collectionmodel.h>
 #include <sway/webcore/router/router.h>
 
 #include <sway/webcore.h>
-#include <sway/webcore/base/treeupdater.h>
-#include <sway/webcore/base/region.h>
-#include <sway/webcore/base/treenodeelement.h>
-#include <sway/webcore/mvc/view/itemview.h>
-#include <sway/webcore/mvc/view/itemcollectionview.h>
+#include <sway/webcore/treeupdater.h>
+#include <sway/webcore/region.h>
+#include <sway/webcore/treenodeelement.h>
+#include <sway/webcore/mvc/itemview.h>
+#include <sway/webcore/mvc/collectionview.h>
 #include <sway/webcore/mvc/view/advanced/stackview.h>
-#include <sway/webcore/mvc/controller/abstractcontroller.h>
+#include <sway/webcore/mvc/controller.h>
 #include <sway/webui.h>
 
 using namespace sway;
@@ -74,14 +70,8 @@ EMSCRIPTEN_BINDINGS(vector) {
 	emscripten::register_vector<emscripten::val>("VectorVal");
 	emscripten::register_vector<std::string>("VectorString");
 	emscripten::register_vector<int>("VectorInt");
+	emscripten::register_vector<webcore::css::CnSelectorDescriptor>("VectorCnSelectorDescriptor");
 } // vector
-
-// EMSCRIPTEN_BINDINGS(event_types) {
-// 	emscripten::enum_<EventTypes_t>("EventTypes_t")
-// 		.value("kClick", EventTypes_t::kClick)
-// 		.value("kMouseOver", EventTypes_t::kMouseOver)
-// 		.value("kMouseOut", EventTypes_t::kMouseOut);
-// } // event_types
 
 EMSCRIPTEN_BINDINGS(event_listener) {
 	emscripten::class_<webcore::EventListener>("EventListener")
@@ -94,8 +84,8 @@ EMSCRIPTEN_BINDINGS(models) {
 		.function("registerObserver", &core::utilities::Observable::registerObserver, emscripten::allow_raw_pointers())
 		.function("notify", &core::utilities::Observable::notify);
 
-	webcore::mvc::model::AbstractItemModel::registerEmscriptenClass("AbstractItemModel");
-	webcore::mvc::model::AbstractItemCollection::registerEmscriptenClass("AbstractItemCollection");
+	webcore::mvc::AItemModel::registerEmscriptenClass("AItemModel");
+	webcore::mvc::ACollectionModel::registerEmscriptenClass("ACollectionModel");
 } // models
 
 EMSCRIPTEN_BINDINGS(views) {
@@ -130,36 +120,49 @@ EMSCRIPTEN_BINDINGS(views) {
 		.function("getNodeId", &core::containers::HierarchyNode::getNodeId)
 		.function("setNodeId", &core::containers::HierarchyNode::setNodeId);
 
-	emscripten::class_<webcore::base::ITreeVisitor>("ITreeVisitor")
-		.function("visitOnEnter", &webcore::base::ITreeVisitor::visitOnEnter, emscripten::allow_raw_pointers())
-		.function("visitOnLeave", &webcore::base::ITreeVisitor::visitOnLeave, emscripten::allow_raw_pointers());
+	emscripten::class_<webcore::ITreeVisitor>("ITreeVisitor")
+		.function("visitOnEnter", &webcore::ITreeVisitor::visitOnEnter, emscripten::allow_raw_pointers())
+		.function("visitOnLeave", &webcore::ITreeVisitor::visitOnLeave, emscripten::allow_raw_pointers());
 
-	emscripten::class_<webcore::base::TreeUpdater, emscripten::base<webcore::base::ITreeVisitor>>("TreeUpdater")
+	emscripten::class_<webcore::TreeUpdater, emscripten::base<webcore::ITreeVisitor>>("TreeUpdater")
 		.constructor()
-		.function("forceUpdate", &webcore::base::TreeUpdater::forceUpdate);
+		.function("forceUpdate", &webcore::TreeUpdater::forceUpdate);
 
-	emscripten::value_object<webcore::base::TreeNodeElementCreateInfo>("TreeNodeElementCreateInfo")
-		.field("tagname", &webcore::base::TreeNodeElementCreateInfo::tagname)
-		.field("id", &webcore::base::TreeNodeElementCreateInfo::id);
+	emscripten::value_object<webcore::css::CnSelectorChain>("CnSelectorChain")
+		.field("block", &webcore::css::CnSelectorChain::block)
+		.field("elem", &webcore::css::CnSelectorChain::elem)
+		.field("mods", &webcore::css::CnSelectorChain::mods);
 
-	emscripten::value_object<webcore::base::RegionCreateInfo>("RegionCreateInfo")
-		.field("id", &webcore::base::RegionCreateInfo::id)
-		.field("replace", &webcore::base::RegionCreateInfo::replace);
+	emscripten::value_object<webcore::css::CnSelectorDescriptor>("CnSelectorDescriptor")
+		//.field("wrap", &webcore::css::CnSelectorDescriptor::wrap)
+		.field("glob", &webcore::css::CnSelectorDescriptor::glob)
+		.field("chain", &webcore::css::CnSelectorDescriptor::chain);
 
-	webcore::base::RegionMixin::registerEmscriptenClass("RegionMixin");
-	webcore::base::TreeNodeElement::registerEmscriptenClass("TreeNodeElement");
+	emscripten::value_object<webcore::TreeNodeElementCreateInfo>("TreeNodeElementCreateInfo")
+		.field("tagname", &webcore::TreeNodeElementCreateInfo::tagname)
+		.field("id", &webcore::TreeNodeElementCreateInfo::id)
+		.field("stylesheet", &webcore::TreeNodeElementCreateInfo::stylesheet)
+		.field("classes", &webcore::TreeNodeElementCreateInfo::classes);
+
+	emscripten::value_object<webcore::RegionCreateInfo>("RegionCreateInfo")
+		.field("id", &webcore::RegionCreateInfo::id)
+		.field("replace", &webcore::RegionCreateInfo::replace);
+
+	webcore::Region::registerEmscriptenClass("Region");
+	webcore::TreeNodeElement::registerEmscriptenClass("TreeNodeElement");
 	webcore::AVisualComponent::registerEmscriptenClass("AVisualComponent");
-	webcore::mvc::view::AItemView::registerEmscriptenClass("AItemView");
-	webcore::mvc::view::AItemCollectionView::registerEmscriptenClass("AItemCollectionView");
+	webcore::css::StyleSheet::registerEmscriptenClass("StyleSheet");
+	webcore::mvc::AItemView::registerEmscriptenClass("AItemView");
+	webcore::mvc::ACollectionView::registerEmscriptenClass("ACollectionView");
 	webcore::mvc::view::advanced::StackView::registerEmscriptenClass("StackView");
 	webui::control::Label::registerEmscriptenClass("Label");
 	webui::control::List::registerEmscriptenClass("List");
 } // views
 
 EMSCRIPTEN_BINDINGS(controllers) {
-	emscripten::class_<webcore::mvc::controller::AbstractController>("AbstractController")
-		.constructor<webcore::mvc::model::AbstractItemModel *>()
-		.function("getModel", &webcore::mvc::controller::AbstractController::getModel, emscripten::allow_raw_pointers());
+	emscripten::class_<webcore::mvc::AController>("AController")
+		.constructor<webcore::mvc::AItemModel *>()
+		.function("getModel", &webcore::mvc::AController::getModel, emscripten::allow_raw_pointers());
 } // controllers
 
 EMSCRIPTEN_BINDINGS(router) {
