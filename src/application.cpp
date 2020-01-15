@@ -8,7 +8,7 @@ Application::Application(const std::string & elementId) {
 	_tree = new core::containers::Hierarchy();
 	_tree->attachListener(this);
 	_tree->setRootNode(
-		_root = new webcore::mvc::AItemView(nullptr, core::containers::HierarchyNodeIndex({ 0 }),
+		_root = new webcore::TreeNodeElement(nullptr, core::containers::HierarchyNodeIndex({ 0 }),
 			elementId, webcore::TreeNodeElementCreateInfo("div", elementId))
 	);
 }
@@ -70,6 +70,7 @@ EMSCRIPTEN_BINDINGS(vector) {
 	emscripten::register_vector<emscripten::val>("VectorVal");
 	emscripten::register_vector<std::string>("VectorString");
 	emscripten::register_vector<int>("VectorInt");
+	emscripten::register_vector<webcore::css::SelectorSmartPtr_t>("SelectorSmartPtr_t");
 	emscripten::register_vector<webcore::css::CnSelectorDescriptor>("VectorCnSelectorDescriptor");
 } // vector
 
@@ -150,8 +151,11 @@ EMSCRIPTEN_BINDINGS(views) {
 
 	webcore::Region::registerEmscriptenClass("Region");
 	webcore::TreeNodeElement::registerEmscriptenClass("TreeNodeElement");
-	webcore::AVisualComponent::registerEmscriptenClass("AVisualComponent");
 	webcore::css::StyleSheet::registerEmscriptenClass("StyleSheet");
+	webcore::css::Selector::registerEmscriptenClass("Selector");
+	webcore::css::IdSelector::registerEmscriptenClass("IdSelector");
+	webcore::css::CnSelector::registerEmscriptenClass("CnSelector");
+	webcore::mvc::AView::registerEmscriptenClass("AView");
 	webcore::mvc::AItemView::registerEmscriptenClass("AItemView");
 	webcore::mvc::ACollectionView::registerEmscriptenClass("ACollectionView");
 	webcore::mvc::view::advanced::StackView::registerEmscriptenClass("StackView");
