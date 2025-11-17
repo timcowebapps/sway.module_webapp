@@ -1,14 +1,13 @@
 #include <sway/webapp/application.h>
 
-NAMESPACE_BEGIN(sway)
-NAMESPACE_BEGIN(webapp)
+namespace sway::webapp {
 
 Application::Application(const std::string & elementId) {
 	_treeUpdater = new webcore::TreeUpdater();
-	_tree = new core::containers::Hierarchy();
+	_tree = new core::Hierarchy();
 	_tree->attachListener(this);
 	_tree->setRootNode(
-		_root = new webcore::TreeNodeElement(nullptr, core::containers::HierarchyNodeIndex({ 0 }),
+		_root = new webcore::TreeNodeElement(nullptr, core::HierarchyNodeIndex({ 0 }),
 			elementId, webcore::TreeNodeElementCreateInfo("div", elementId))
 	);
 }
@@ -19,7 +18,7 @@ Application::~Application() {
 	SAFE_DELETE(_treeUpdater);
 }
 
-void Application::onNodeAdded(const core::containers::HierarchyNodeIndex & nodeIndex) {
+void Application::onNodeAdded(const core::HierarchyNodeIndex & nodeIndex) {
 	webcore::TreeNodeElement * element = (webcore::TreeNodeElement *) _tree->find(nodeIndex.getParent());
 	EM_ASM({console.log("NODE_ID " + UTF8ToString($0))}, nodeIndex.toString().c_str());
 
@@ -29,11 +28,11 @@ void Application::onNodeAdded(const core::containers::HierarchyNodeIndex & nodeI
 	_treeUpdater->forceUpdate();
 }
 
-void Application::onNodeRemoved(core::containers::HierarchyNodePtr_t parent, core::containers::HierarchyNodePtr_t child) {
+void Application::onNodeRemoved(core::HierarchyNodePtr_t parent, core::HierarchyNodePtr_t child) {
 	// Empty
 }
 
-void Application::onNodeUpdated(const core::containers::HierarchyNodeIndex & nodeIndex) {
+void Application::onNodeUpdated(const core::HierarchyNodeIndex & nodeIndex) {
 	webcore::TreeNodeElement * element = (webcore::TreeNodeElement *) _tree->find(nodeIndex.getParent());
 	EM_ASM({console.log("NODE_UPDATE_ID " + UTF8ToString($0))}, nodeIndex.toString().c_str());
 
@@ -47,8 +46,7 @@ webcore::TreeNodeElement * Application::getRoot() {
 	return _root;
 }
 
-NAMESPACE_END(webapp)
-NAMESPACE_END(sway)
+} // namespace sway::webapp
 
 #include <sway/webcore/mvc/itemmodel.h>
 #include <sway/webcore/mvc/collectionmodel.h>
@@ -70,8 +68,8 @@ EMSCRIPTEN_BINDINGS(vector) {
 	emscripten::register_vector<emscripten::val>("VectorVal");
 	emscripten::register_vector<std::string>("VectorString");
 	emscripten::register_vector<int>("VectorInt");
-	emscripten::register_vector<webcore::css::SelectorSmartPtr_t>("SelectorSmartPtr_t");
-	emscripten::register_vector<webcore::css::CnSelectorDescriptor>("VectorCnSelectorDescriptor");
+	emscripten::register_vector<webcore::SelectorSmartPtr_t>("SelectorSmartPtr_t");
+	emscripten::register_vector<webcore::CnSelectorDescriptor>("VectorCnSelectorDescriptor");
 } // vector
 
 EMSCRIPTEN_BINDINGS(event_listener) {
@@ -90,36 +88,36 @@ EMSCRIPTEN_BINDINGS(models) {
 } // models
 
 EMSCRIPTEN_BINDINGS(views) {
-	emscripten::class_<core::containers::HierarchyListener>("HierarchyListener")
-		.function("onNodeAdded", &core::containers::HierarchyListener::onNodeAdded, emscripten::allow_raw_pointers())
-		.function("onNodeRemoved", &core::containers::HierarchyListener::onNodeRemoved, emscripten::allow_raw_pointers());
+	emscripten::class_<core::HierarchyListener>("HierarchyListener")
+		.function("onNodeAdded", &core::HierarchyListener::onNodeAdded, emscripten::allow_raw_pointers())
+		.function("onNodeRemoved", &core::HierarchyListener::onNodeRemoved, emscripten::allow_raw_pointers());
 
-	emscripten::class_<core::containers::Hierarchy>("Hierarchy")
+	emscripten::class_<core::Hierarchy>("Hierarchy")
 		.constructor()
-		.function("attachListener", &core::containers::Hierarchy::attachListener, emscripten::allow_raw_pointers())
-		.function("detachListener", &core::containers::Hierarchy::detachListener, emscripten::allow_raw_pointers())
-		.function("getRootNode", &core::containers::Hierarchy::getRootNode, emscripten::allow_raw_pointers())
-		.function("setRootNode", &core::containers::Hierarchy::setRootNode, emscripten::allow_raw_pointers())
-		.function("getListeners", &core::containers::Hierarchy::getListeners, emscripten::allow_raw_pointers());
+		.function("attachListener", &core::Hierarchy::attachListener, emscripten::allow_raw_pointers())
+		.function("detachListener", &core::Hierarchy::detachListener, emscripten::allow_raw_pointers())
+		.function("getRootNode", &core::Hierarchy::getRootNode, emscripten::allow_raw_pointers())
+		.function("setRootNode", &core::Hierarchy::setRootNode, emscripten::allow_raw_pointers())
+		.function("getListeners", &core::Hierarchy::getListeners, emscripten::allow_raw_pointers());
 
-	emscripten::class_<core::containers::HierarchyNodeIndex>("HierarchyNodeIndex")
+	emscripten::class_<core::HierarchyNodeIndex>("HierarchyNodeIndex")
 		.constructor<std::vector<s32_t>>()
-		.constructor<core::containers::HierarchyNodeIndex, s32_t>()
-		.function("getParent", &core::containers::HierarchyNodeIndex::getParent, emscripten::allow_raw_pointers())
-		.function("getDepth", &core::containers::HierarchyNodeIndex::getDepth)
-		.function("isValid", &core::containers::HierarchyNodeIndex::isValid)
-		.function("toString", &core::containers::HierarchyNodeIndex::toString);
+		.constructor<core::HierarchyNodeIndex, s32_t>()
+		.function("getParent", &core::HierarchyNodeIndex::getParent, emscripten::allow_raw_pointers())
+		.function("getDepth", &core::HierarchyNodeIndex::getDepth)
+		.function("isValid", &core::HierarchyNodeIndex::isValid)
+		.function("toString", &core::HierarchyNodeIndex::toString);
 
-	emscripten::class_<core::containers::HierarchyNode>("HierarchyNode")
-		.constructor<core::containers::HierarchyNodePtr_t, core::containers::HierarchyNodeIndex, std::string>()
-		.function("addChild", &core::containers::HierarchyNode::addChild, emscripten::allow_raw_pointers())
-		.function("findChild", &core::containers::HierarchyNode::findChild, emscripten::allow_raw_pointers())
-		.function("getChild", &core::containers::HierarchyNode::getChild, emscripten::allow_raw_pointers())
-		.function("hasChild", &core::containers::HierarchyNode::hasChild)
-		.function("getParentNode", &core::containers::HierarchyNode::getParentNode, emscripten::allow_raw_pointers())
-		.function("setParentNode", &core::containers::HierarchyNode::setParentNode, emscripten::allow_raw_pointers())
-		.function("getNodeId", &core::containers::HierarchyNode::getNodeId)
-		.function("setNodeId", &core::containers::HierarchyNode::setNodeId);
+	emscripten::class_<core::HierarchyNode>("HierarchyNode")
+		.constructor<core::HierarchyNodePtr_t, core::HierarchyNodeIndex, std::string>()
+		.function("addChild", &core::HierarchyNode::addChild, emscripten::allow_raw_pointers())
+		.function("findChild", &core::HierarchyNode::findChild, emscripten::allow_raw_pointers())
+		.function("getChild", &core::HierarchyNode::getChild, emscripten::allow_raw_pointers())
+		.function("hasChild", &core::HierarchyNode::hasChild)
+		.function("getParentNode", &core::HierarchyNode::getParentNode, emscripten::allow_raw_pointers())
+		.function("setParentNode", &core::HierarchyNode::setParentNode, emscripten::allow_raw_pointers())
+		.function("getNodeId", &core::HierarchyNode::getNodeId)
+		.function("setNodeId", &core::HierarchyNode::setNodeId);
 
 	emscripten::class_<webcore::ITreeVisitor>("ITreeVisitor")
 		.function("visitOnEnter", &webcore::ITreeVisitor::visitOnEnter, emscripten::allow_raw_pointers())
@@ -129,15 +127,15 @@ EMSCRIPTEN_BINDINGS(views) {
 		.constructor()
 		.function("forceUpdate", &webcore::TreeUpdater::forceUpdate);
 
-	emscripten::value_object<webcore::css::CnSelectorChain>("CnSelectorChain")
-		.field("block", &webcore::css::CnSelectorChain::block)
-		.field("elem", &webcore::css::CnSelectorChain::elem)
-		.field("mods", &webcore::css::CnSelectorChain::mods);
+	emscripten::value_object<webcore::CnSelectorChain>("CnSelectorChain")
+		.field("block", &webcore::CnSelectorChain::block)
+		.field("elem", &webcore::CnSelectorChain::elem)
+		.field("mods", &webcore::CnSelectorChain::mods);
 
-	emscripten::value_object<webcore::css::CnSelectorDescriptor>("CnSelectorDescriptor")
-		//.field("wrap", &webcore::css::CnSelectorDescriptor::wrap)
-		.field("glob", &webcore::css::CnSelectorDescriptor::glob)
-		.field("chain", &webcore::css::CnSelectorDescriptor::chain);
+	emscripten::value_object<webcore::CnSelectorDescriptor>("CnSelectorDescriptor")
+		//.field("wrap", &webcore::CnSelectorDescriptor::wrap)
+		.field("glob", &webcore::CnSelectorDescriptor::glob)
+		.field("chain", &webcore::CnSelectorDescriptor::chain);
 
 	emscripten::value_object<webcore::TreeNodeElementCreateInfo>("TreeNodeElementCreateInfo")
 		.field("tagname", &webcore::TreeNodeElementCreateInfo::tagname)
@@ -151,10 +149,10 @@ EMSCRIPTEN_BINDINGS(views) {
 
 	webcore::Region::registerEmscriptenClass("Region");
 	webcore::TreeNodeElement::registerEmscriptenClass("TreeNodeElement");
-	webcore::css::StyleSheet::registerEmscriptenClass("StyleSheet");
-	webcore::css::Selector::registerEmscriptenClass("Selector");
-	webcore::css::IdSelector::registerEmscriptenClass("IdSelector");
-	webcore::css::CnSelector::registerEmscriptenClass("CnSelector");
+	webcore::StyleSheet::registerEmscriptenClass("StyleSheet");
+	webcore::Selector::registerEmscriptenClass("Selector");
+	webcore::IdSelector::registerEmscriptenClass("IdSelector");
+	webcore::CnSelector::registerEmscriptenClass("CnSelector");
 	webcore::mvc::AView::registerEmscriptenClass("AView");
 	webcore::mvc::AItemView::registerEmscriptenClass("AItemView");
 	webcore::mvc::ACollectionView::registerEmscriptenClass("ACollectionView");

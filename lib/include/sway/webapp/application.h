@@ -9,11 +9,10 @@
 #include <sway/webcore/mvc/itemview.h>
 #include <sway/webcore/prereqs.h>
 
-NAMESPACE_BEGIN(sway)
-NAMESPACE_BEGIN(webapp)
+namespace sway::webapp {
 
 class Application
-	: public core::containers::HierarchyListener {
+	: public core::HierarchyListener {
 
 public:
 
@@ -34,23 +33,22 @@ public:
 
 	#pragma endregion // Constructor / Destructor
 
-	virtual void onNodeAdded(const core::containers::HierarchyNodeIndex & nodeIndex);
+	virtual void onNodeAdded(const core::HierarchyNodeIndex & nodeIndex);
 
-	virtual void onNodeRemoved(core::containers::HierarchyNodePtr_t parent, core::containers::HierarchyNodePtr_t child);
+	virtual void onNodeRemoved(core::HierarchyNodePtr_t parent, core::HierarchyNodePtr_t child);
 
-	virtual void onNodeUpdated(const core::containers::HierarchyNodeIndex & nodeIndex);
+	virtual void onNodeUpdated(const core::HierarchyNodeIndex & nodeIndex);
 
 	webcore::TreeNodeElement * getRoot();
 
 	void start();
 
 private:
-	core::containers::Hierarchy * _tree;
+	core::Hierarchy * _tree;
 	webcore::TreeNodeElement * _root;
 	webcore::TreeUpdater * _treeUpdater;
 };
 
-NAMESPACE_END(webapp)
-NAMESPACE_END(sway)
+} // namespace sway::webapp
 
 #endif // _SWAY_WEBAPP_APPLICATION_H
