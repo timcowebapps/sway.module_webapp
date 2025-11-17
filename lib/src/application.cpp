@@ -7,7 +7,7 @@ Application::Application(const std::string & elementId) {
 	_tree = new core::Hierarchy();
 	_tree->attachListener(this);
 	_tree->setRootNode(
-		_root = new webcore::TreeNodeElement(nullptr, core::HierarchyNodeIndex({ 0 }),
+		_root = new webcore::TreeNodeElement(nullptr, core::NodeIndex({ 0 }),
 			elementId, webcore::TreeNodeElementCreateInfo("div", elementId))
 	);
 }
@@ -18,7 +18,7 @@ Application::~Application() {
 	SAFE_DELETE(_treeUpdater);
 }
 
-void Application::onNodeAdded(const core::HierarchyNodeIndex & nodeIndex) {
+void Application::onNodeAdded(const core::NodeIndex & nodeIndex) {
 	webcore::TreeNodeElement * element = (webcore::TreeNodeElement *) _tree->find(nodeIndex.getParent());
 	EM_ASM({console.log("NODE_ID " + UTF8ToString($0))}, nodeIndex.toString().c_str());
 
@@ -28,11 +28,11 @@ void Application::onNodeAdded(const core::HierarchyNodeIndex & nodeIndex) {
 	_treeUpdater->forceUpdate();
 }
 
-void Application::onNodeRemoved(core::HierarchyNodePtr_t parent, core::HierarchyNodePtr_t child) {
+void Application::onNodeRemoved(core::NodePtr_t parent, core::NodePtr_t child) {
 	// Empty
 }
 
-void Application::onNodeUpdated(const core::HierarchyNodeIndex & nodeIndex) {
+void Application::onNodeUpdated(const core::NodeIndex & nodeIndex) {
 	webcore::TreeNodeElement * element = (webcore::TreeNodeElement *) _tree->find(nodeIndex.getParent());
 	EM_ASM({console.log("NODE_UPDATE_ID " + UTF8ToString($0))}, nodeIndex.toString().c_str());
 
@@ -100,24 +100,24 @@ EMSCRIPTEN_BINDINGS(views) {
 		.function("setRootNode", &core::Hierarchy::setRootNode, emscripten::allow_raw_pointers())
 		.function("getListeners", &core::Hierarchy::getListeners, emscripten::allow_raw_pointers());
 
-	emscripten::class_<core::HierarchyNodeIndex>("HierarchyNodeIndex")
+	emscripten::class_<core::NodeIndex>("NodeIndex")
 		.constructor<std::vector<s32_t>>()
-		.constructor<core::HierarchyNodeIndex, s32_t>()
-		.function("getParent", &core::HierarchyNodeIndex::getParent, emscripten::allow_raw_pointers())
-		.function("getDepth", &core::HierarchyNodeIndex::getDepth)
-		.function("isValid", &core::HierarchyNodeIndex::isValid)
-		.function("toString", &core::HierarchyNodeIndex::toString);
+		.constructor<core::NodeIndex, s32_t>()
+		.function("getParent", &core::NodeIndex::getParent, emscripten::allow_raw_pointers())
+		.function("getDepth", &core::NodeIndex::getDepth)
+		.function("isValid", &core::NodeIndex::isValid)
+		.function("toString", &core::NodeIndex::toString);
 
-	emscripten::class_<core::HierarchyNode>("HierarchyNode")
-		.constructor<core::HierarchyNodePtr_t, core::HierarchyNodeIndex, std::string>()
-		.function("addChild", &core::HierarchyNode::addChild, emscripten::allow_raw_pointers())
-		.function("findChild", &core::HierarchyNode::findChild, emscripten::allow_raw_pointers())
-		.function("getChild", &core::HierarchyNode::getChild, emscripten::allow_raw_pointers())
-		.function("hasChild", &core::HierarchyNode::hasChild)
-		.function("getParentNode", &core::HierarchyNode::getParentNode, emscripten::allow_raw_pointers())
-		.function("setParentNode", &core::HierarchyNode::setParentNode, emscripten::allow_raw_pointers())
-		.function("getNodeId", &core::HierarchyNode::getNodeId)
-		.function("setNodeId", &core::HierarchyNode::setNodeId);
+	emscripten::class_<core::Node>("Node")
+		.constructor<core::NodePtr_t, core::NodeIndex, std::string>()
+		.function("addChild", &core::Node::addChild, emscripten::allow_raw_pointers())
+		.function("findChild", &core::Node::findChild, emscripten::allow_raw_pointers())
+		.function("getChild", &core::Node::getChild, emscripten::allow_raw_pointers())
+		.function("hasChild", &core::Node::hasChild)
+		.function("getParentNode", &core::Node::getParentNode, emscripten::allow_raw_pointers())
+		.function("setParentNode", &core::Node::setParentNode, emscripten::allow_raw_pointers())
+		.function("getNodeId", &core::Node::getNodeId)
+		.function("setNodeId", &core::Node::setNodeId);
 
 	emscripten::class_<webcore::ITreeVisitor>("ITreeVisitor")
 		.function("visitOnEnter", &webcore::ITreeVisitor::visitOnEnter, emscripten::allow_raw_pointers())

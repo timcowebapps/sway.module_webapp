@@ -10,6 +10,13 @@ set(META_VERSION_PATCH 0)
 set(META_VERSION ${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH})
 set(META_LANGUAGES C CXX)
 
+option(CUSTOM_EMSCRIPTEN_ROOT_DIR "Emscripten root directory" OFF)
+
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "${CUSTOM_EMSCRIPTEN_ROOT_DIR}/cmake/Modules/Platform/Emscripten.cmake")
+  include(${CMAKE_TOOLCHAIN_FILE})
+endif ()
+
 project(${META_PROJECT_NAME} VERSION ${META_VERSION} LANGUAGES ${META_LANGUAGES})
 
 if (NOT TARGET libmodule_core)
@@ -29,7 +36,7 @@ if (NOT TARGET libmodule_webui)
 endif()
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_COMPILER "em++")
+set(CMAKE_CXX_COMPILER "${CUSTOM_EMSCRIPTEN_ROOT_DIR}/em++")
 set(CMAKE_CXX_FLAGS "--bind -O2 -Wall -Wno-unknown-pragmas -Wno-unicode-whitespace")
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s WASM=1 -s ASSERTIONS=1 -s MODULARIZE=1")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s WASM=1 -s ASSERTIONS=2 -s MODULARIZE=1 -s EMULATE_FUNCTION_POINTER_CASTS=1")
@@ -46,7 +53,7 @@ endif()
 set(MODULE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # Добавляем пути для поиска хедеров
-include_directories("/home/bonus85/emsdk/emscripten/incoming/system/include")
+include_directories("${EMSCRIPTEN_PREFIX}/system/include")
 include_directories(${MODULE_DIR}/include)
 include_directories(${MODULE_DIR}/modules/sway.module_core/include)
 include_directories(${MODULE_DIR}/modules/sway.module_webcore/include)

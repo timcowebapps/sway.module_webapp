@@ -33,11 +33,11 @@ public:
 
 	#pragma endregion // Constructor / Destructor
 
-	virtual void onNodeAdded(const core::HierarchyNodeIndex & nodeIndex);
+	virtual void onNodeAdded(const core::NodeIndex & nodeIndex);
 
-	virtual void onNodeRemoved(core::HierarchyNodePtr_t parent, core::HierarchyNodePtr_t child);
+	virtual void onNodeRemoved(core::NodePtr_t parent, core::NodePtr_t child);
 
-	virtual void onNodeUpdated(const core::HierarchyNodeIndex & nodeIndex);
+	virtual void onNodeUpdated(const core::NodeIndex & nodeIndex);
 
 	webcore::TreeNodeElement * getRoot();
 
